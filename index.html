@@ -178,10 +178,6 @@
     }
   }
 
-  // رسم العجلة فور تحميل الصفحة
-  window.onload = function() {
-    drawWheel();
-  };
   drawWheel();
 
   let currentRotation = 0;
@@ -212,9 +208,12 @@
     spinBtn.disabled = true;
     errorMsg.textContent = "جاري لَف العجلة...";
 
+    // اختيار الجائزة عشوائياً
     const randomIndex = Math.floor(Math.random() * numPrizes);
     const degreesPerPrize = 360 / numPrizes;
-    const targetAngle = 360 * 5 + (numPrizes - 1 - randomIndex) * degreesPerPrize + (degreesPerPrize / 2);
+    
+    // حساب دقيق لزاوية التوقف بحيث يتطابق مؤشر السهم تماماً مع القطع المرسوم
+    const targetAngle = 360 * 5 + (numPrizes - randomIndex) * degreesPerPrize - (degreesPerPrize / 2);
     
     currentRotation += targetAngle;
     canvas.style.transform = `rotate(${currentRotation}deg)`;
@@ -222,6 +221,7 @@
     setTimeout(() => {
       localStorage.setItem("has_played", "true");
 
+      // الانتقال للصفحة الثانية وعرض الهدية المحددة بالذات
       document.getElementById("game-page").style.display = "none";
       document.getElementById("claim-page").style.display = "block";
 
