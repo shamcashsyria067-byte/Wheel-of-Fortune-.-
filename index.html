@@ -66,4 +66,191 @@
     border-radius: 8px;
     border: none;
     background-color: #ffd700;
-    color: #0b13
+    color: #0b132b;
+    font-weight: bold;
+    font-size: 17px;
+    cursor: pointer;
+  }
+  #spinBtn:disabled { background-color: #64748b; cursor: not-allowed; }
+  #error-msg { font-size: 15px; margin-top: 10px; color: #ff4757; font-weight: bold; }
+
+  /* الصفحة الثانية: استلام الجائزة */
+  #claim-page {
+    display: none;
+    max-width: 400px;
+    margin: 20px auto;
+    background: #1c2541;
+    padding: 25px;
+    border-radius: 16px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+  }
+  .congrats-title { font-size: 24px; color: #ffd700; margin-bottom: 10px; }
+  .prize-card {
+    background: #0b132b;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border: 1px dashed #ffd700;
+  }
+  .prize-name { font-size: 22px; color: #4ade80; font-weight: bold; margin: 8px 0; }
+  .user-info { font-size: 14px; color: #e2e8f0; margin: 5px 0; text-align: right; }
+  .instruction-box {
+    background: #ff4757;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+  <div id="game-page">
+    <h2>عجلة الحظ اليومية 🎁</h2>
+    <p>أدخل اسمك ورقم هاتفك (مسموح محاولتان كل يوم)!</p>
+
+    <div class="wheel-container">
+      <div class="pointer"></div>
+      <canvas id="wheelCanvas" width="280" height="280"></canvas>
+    </div>
+
+    <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
+    <input type="tel" id="phone" class="input-field" placeholder="أدخل رقم الهاتف مع رمز الدولة">
+    <button id="spinBtn">لَف العجلة</button>
+
+    <div id="error-msg"></div>
+  </div>
+
+  <div id="claim-page">
+    <div class="congrats-title">🎉 ألف مبروك الفوز! 🎉</div>
+    <p>لقد ربحت معنا جائزة قيمة، يرجى حفظ هذه الصفحة لاستلام الجائزة.</p>
+
+    <div class="prize-card">
+      <div>الجائزة التي ربحتها هي:</div>
+      <div id="claimedPrize" class="prize-name"></div>
+      <hr style="border-color: #334155; margin: 10px 0;">
+      <div id="claimedName" class="user-info"></div>
+      <div id="claimedPhone" class="user-info"></div>
+      <div id="claimedDateTime" class="user-info" style="color: #ffd700;"></div>
+    </div>
+
+    <div class="instruction-box">
+      📸 لاستلام الجائزة:<br>
+      يرجى أخذ لقطة شاشة (Screenshot) لهذه الصفحة وإرسالها لمسؤول الصفحة على الرسائل الخاصة!
+    </div>
+  </div>
+
+<script>
+  const prizes = ["🕋 رحلة عمرة", "🚗 سيارة", "❌ حظ أوفر", "💵 1000 دولار", "📱 آيفون 18", "🎁 جائزة أخرى"];
+  const colors = ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff", "#1dd1a1"];
+  
+  const canvas = document.getElementById("wheelCanvas");
+  const ctx = canvas.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const errorMsg = document.getElementById("error-msg");
+  
+  const numPrizes = prizes.length;
+  const arc = (2 * Math.PI) / numPrizes;
+
+  function drawWheel() {
+    ctx.clearRect(0, 0, 280, 280);
+    for (let i = 0; i < numPrizes; i++) {
+      const angle = i * arc;
+      ctx.beginPath();
+      ctx.fillStyle = colors[i];
+      ctx.moveTo(140, 140);
+      ctx.arc(140, 140, 140, angle, angle + arc);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(140, 140);
+      ctx.rotate(angle + arc / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 12px Tahoma";
+      ctx.fillText(prizes[i], 110, 5);
+      ctx.restore();
+    }
+  }
+
+  drawWheel();
+
+  let currentRotation = 0;
+
+  // التحقق من محاولات اليوم الحالي
+  const todayDateStr = new Date().toLocaleDateString();
+  let savedDate = localStorage.getItem("wheel_date");
+  let playsCount = parseInt(localStorage.getItem("wheel_daily_count") || "0");
+
+  if (savedDate !== todayDateStr) {
+    playsCount = 0;
+    localStorage.setItem("wheel_date", todayDateStr);
+    localStorage.setItem("wheel_daily_count", "0");
+  }
+
+  if (playsCount >= 2) {
+    spinBtn.disabled = true;
+    errorMsg.textContent = "عذراً، لقد استنفذت محاولاتك الـ 2 اليومية! يمكنك المحاولة غداً.";
+  }
+
+  spinBtn.onclick = () => {
+    const name = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name) {
+      errorMsg.textContent = "الرجاء إدخال الاسم الكامل أولاً!";
+      return;
+    }
+    if (!phone || phone.length < 8) {
+      errorMsg.textContent = "الرجاء إدخال رقم هاتف صحيح!";
+      return;
+    }
+
+    if (playsCount >= 2) {
+      errorMsg.textContent = "لقد استنفذت محاولاتك الـ 2 لهذا اليوم!";
+      return;
+    }
+
+    spinBtn.disabled = true;
+    errorMsg.textContent = "جاري لَف العجلة...";
+
+    const randomIndex = Math.floor(Math.random() * numPrizes);
+    const degreesPerPrize = 360 / numPrizes;
+    const targetAngle = 360 * 5 + (randomIndex * degreesPerPrize) + (degreesPerPrize / 2);
+    
+    currentRotation += targetAngle;
+    canvas.style.transform = `rotate(-${currentRotation}deg)`;
+
+    setTimeout(() => {
+      playsCount++;
+      localStorage.setItem("wheel_daily_count", playsCount);
+      localStorage.setItem("wheel_date", todayDateStr);
+
+      // استخراج الوقت والتاريخ الحاليين بدقة
+      const now = new Date();
+      const formattedDateTime = now.toLocaleString('ar-JO', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      document.getElementById("game-page").style.display = "none";
+      document.getElementById("claim-page").style.display = "block";
+
+      document.getElementById("claimedPrize").textContent = prizes[randomIndex];
+      document.getElementById("claimedName").textContent = "👤 الاسم: " + name;
+      document.getElementById("claimedPhone").textContent = "📱 الهاتف: " + phone;
+      document.getElementById("claimedDateTime").textContent = "🕒 وقت الفوز: " + formattedDateTime;
+    }, 4500);
+  };
+</script>
+
+</body>
+</html>
