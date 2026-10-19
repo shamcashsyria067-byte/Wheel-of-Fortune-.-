@@ -112,7 +112,7 @@
   <!-- الصفحة الأولى: العجلة والإدخال -->
   <div id="game-page">
     <h2>عجلة الحظ اليومية 🎁</h2>
-    <p>أدخل اسمك ورقم هاتفك ثم لُف العجلة واربح معنا!</p>
+    <p>أدخل اسمك ورقم هاتفك (يُسمح لك بمحاولتين)!</p>
 
     <div class="wheel-container">
       <div class="pointer"></div>
@@ -182,9 +182,11 @@
 
   let currentRotation = 0;
 
-  if (localStorage.getItem("has_played")) {
+  // التحقق من عدد المحاولات (مسموح بمرتين كحد максимаلي)
+  let playsCount = parseInt(localStorage.getItem("wheel_plays_count") || "0");
+  if (playsCount >= 2) {
     spinBtn.disabled = true;
-    errorMsg.textContent = "عذراً، لقد قمت بلَف العجلة مسبقاً! يُسمح بمشاركة واحدة فقط.";
+    errorMsg.textContent = "عذراً، لقد استنفذت محاولاتك الـ 2 المسموحة!";
   }
 
   spinBtn.onclick = () => {
@@ -200,28 +202,29 @@
       return;
     }
 
-    if (localStorage.getItem("has_played")) {
-      errorMsg.textContent = "لقد شاركت مسبقاً!";
+    if (playsCount >= 2) {
+      errorMsg.textContent = "لقد استنفذت محاولاتك الـ 2!";
       return;
     }
 
     spinBtn.disabled = true;
     errorMsg.textContent = "جاري لَف العجلة...";
 
-    // اختيار الجائزة عشوائياً
+    // اختيار الجائزة عشوائياً بدقة
     const randomIndex = Math.floor(Math.random() * numPrizes);
     const degreesPerPrize = 360 / numPrizes;
     
-    // حساب دقيق لزاوية التوقف بحيث يتطابق مؤشر السهم تماماً مع القطع المرسوم
-    const targetAngle = 360 * 5 + (numPrizes - randomIndex) * degreesPerPrize - (degreesPerPrize / 2);
+    // تصحيح زاوية التوقف لضمان مطابقة الهدية تماماً لمؤشر السهم
+    const targetAngle = 360 * 5 + (randomIndex * degreesPerPrize) + (degreesPerPrize / 2);
     
     currentRotation += targetAngle;
-    canvas.style.transform = `rotate(${currentRotation}deg)`;
+    canvas.style.transform = `rotate(-${currentRotation}deg)`;
 
     setTimeout(() => {
-      localStorage.setItem("has_played", "true");
+      playsCount++;
+      localStorage.setItem("wheel_plays_count", playsCount);
 
-      // الانتقال للصفحة الثانية وعرض الهدية المحددة بالذات
+      // الانتقال للصفحة الثانية وعرض الهدية الصحيحة
       document.getElementById("game-page").style.display = "none";
       document.getElementById("claim-page").style.display = "block";
 
