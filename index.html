@@ -3,67 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عجلة الحظ التفاعلية</title>
+<title>عجلة الحظ اليومية</title>
 <style>
-  body { font-family: Tahoma, sans-serif; background-color: #0d1b2a; color: #fff; text-align: center; margin: 0; padding: 20px; }
-  .wheel-container { position: relative; width: 300px; height: 300px; margin: 20px auto; }
-  #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #ffd700; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#ff6b6b 0deg 60deg, #feca57 60deg 120deg, #48dbfb 60deg 180deg, #ff9ff3 180deg 240deg, #54a0ff 240deg 300deg, #1dd1a1 300deg 360deg); }
-  .pointer { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 30px solid #ff4757; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 10; }
-  input, button { padding: 12px; font-size: 16px; margin: 10px; border-radius: 8px; border: none; width: 80%; max-width: 300px; }
-  button { background-color: #ffd700; color: #0d1b2a; font-weight: bold; cursor: pointer; }
-  button:hover { background-color: #ffc107; }
-  #result { font-size: 20px; margin-top: 20px; font-weight: bold; color: #ffd700; }
+  body {
+    background-color: #0b132b;
+    color: #ffffff;
+    font-family: Tahoma, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 10px;
+  }
+  h2 { margin-bottom: 5px; color: #ffd700; }
+  p { font-size: 13px; color: #cbd5e1; margin-top: 0; }
+  
+  .wheel-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 15px auto;
+  }
+  .pointer {
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 24px solid #ff4757;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+  #wheelCanvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid #ffd700;
+    transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1);
+  }
+  .input-field {
+    width: 85%;
+    max-width: 280px;
+    padding: 10px;
+    margin: 6px auto;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    text-align: center;
+    display: block;
+  }
+  #spinBtn {
+    width: 85%;
+    max-width: 280px;
+    padding: 11px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+    background-color: #ffd700;
+    color: #0b132b;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #result {
+    font-size: 16px;
+    margin-top: 12px;
+    font-weight: bold;
+    color: #ffd700;
+    min-height: 24px;
+  }
 </style>
 </head>
 <body>
 
   <h2>عجلة الحظ اليومية</h2>
-  <p>أدخل رقم هاتفك ثم اضغط لف العجلة واربح معنا!</p>
+  <p>أدخل اسمك ورقم هاتفك ثم لُف العجلة واربح معنا!</p>
 
   <div class="wheel-container">
     <div class="pointer"></div>
-    <div id="wheel"></div>
+    <canvas id="wheelCanvas" width="300" height="300"></canvas>
   </div>
 
-  <input type="text" id="phone" placeholder="أدخل رقم هاتفك مع رمز الدولة">
-  <br>
-  <button id="spinBtn">لف العجلة</button>
-  
+  <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
+  <input type="tel" id="phone" class="input-field" placeholder="أدخل رقم الهاتف مع رمز الدولة">
+  <button id="spinBtn">لَف العجلة</button>
+
   <div id="result"></div>
 
 <script>
-  const prizes = ["رحلة عمرة", "سيارة", "حظ أوفر", "1000 دولار", "آيفون 15", "جائزة أخرى"];
-  const wheel = document.getElementById("wheel");
+  const prizes = ["رحلة عمرة", "سيارة", "حظ أوفر", "1000 دولار", "آيفون 18", "جائزة أخرى"];
+  const colors = ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff", "#1dd1a1"];
+  
+  const canvas = document.getElementById("wheelCanvas");
+  const ctx = canvas.getContext("2d");
   const spinBtn = document.getElementById("spinBtn");
-  const phoneInput = document.getElementById("phone");
   const resultDiv = document.getElementById("result");
   
+  const numPrizes = prizes.length;
+  const arc = (2 * Math.PI) / numPrizes;
+
+  function drawWheel() {
+    for (let i = 0; i < numPrizes; i++) {
+      const angle = i * arc;
+      ctx.beginPath();
+      ctx.fillStyle = colors[i];
+      ctx.moveTo(150, 150);
+      ctx.arc(150, 150, 150, angle, angle + arc);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(150, 150);
+      ctx.rotate(angle + arc / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 13px Tahoma";
+      ctx.fillText(prizes[i], 125, 5);
+      ctx.restore();
+    }
+  }
+
+  drawWheel();
+
   let currentRotation = 0;
 
+  if (localStorage.getItem("has_played")) {
+    spinBtn.disabled = true;
+    resultDiv.textContent = "عذراً، لقد قمت بلَف العجلة مسبقاً!";
+  }
+
   spinBtn.onclick = () => {
-    const phone = phoneInput.value.trim();
+    const name = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name) {
+      resultDiv.textContent = "الرجاء إدخال الاسم الكامل!";
+      return;
+    }
     if (!phone || phone.length < 8) {
-      resultDiv.textContent = "الرجاء إدخال رقم هاتف صحيح أولاً!";
+      resultDiv.textContent = "الرجاء إدخال رقم هاتف صحيح!";
+      return;
+    }
+
+    if (localStorage.getItem("has_played")) {
+      resultDiv.textContent = "لقد شاركت مسبقاً!";
       return;
     }
 
     spinBtn.disabled = true;
-    resultDiv.textContent = "جاري لف العجلة...";
+    resultDiv.textContent = "جاري لَف العجلة...";
 
-    // اختيار جائزة عشوائية وتدوير العجلة
-    const randomChoice = Math.floor(Math.random() * prizes.length);
-    const degreesPerPrize = 360 / prizes.length;
+    const randomIndex = Math.floor(Math.random() * numPrizes);
+    const degreesPerPrize = 360 / numPrizes;
+    const targetAngle = 360 * 5 + (numPrizes - 1 - randomIndex) * degreesPerPrize + (degreesPerPrize / 2);
     
-    // عدد دورات كاملة (5 دورات) + زاوية الجائزة
-    const extraSpans = 360 * 5;
-    const targetDegree = extraSpans + (randomChoice * degreesPerPrize) + (degreesPerPrize / 2);
-    
-    currentRotation += targetDegree;
-    wheel.style.transform = `rotate(-${currentRotation}deg)`;
+    currentRotation += targetAngle;
+    canvas.style.transform = `rotate(${currentRotation}deg)`;
 
     setTimeout(() => {
-      resultDiv.textContent = `مبروك! لقد ربحت معنا: ${prizes[randomChoice]} 🎉`;
-      spinBtn.disabled = false;
+      resultDiv.textContent = `مبروك يا ${name}! ربحت معنا: ${prizes[randomIndex]} 🎉`;
+      localStorage.setItem("has_played", "true");
     }, 4000);
   };
 </script>
