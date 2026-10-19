@@ -9,7 +9,7 @@
   body {
     background-color: #0b132b;
     color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Tahoma, sans-serif;
     text-align: center;
     margin: 0;
     padding: 15px;
@@ -74,7 +74,7 @@
   #spinBtn:disabled { background-color: #64748b; cursor: not-allowed; }
   #error-msg { font-size: 15px; margin-top: 10px; color: #ff4757; font-weight: bold; }
 
-  /* صفحة استلام الجائزة (الصفحة الثانية) */
+  /* الصفحة الثانية: استلام الجائزة */
   #claim-page {
     display: none;
     max-width: 400px;
@@ -109,10 +109,9 @@
 </head>
 <body>
 
-  <!-- الصفحة الأولى: العجلة والإدخال -->
   <div id="game-page">
     <h2>عجلة الحظ اليومية 🎁</h2>
-    <p>أدخل اسمك ورقم هاتفك (يُسمح لك بمحاولتين)!</p>
+    <p>أدخل اسمك ورقم هاتفك (مسموح بمحاولتين)!</p>
 
     <div class="wheel-container">
       <div class="pointer"></div>
@@ -126,7 +125,6 @@
     <div id="error-msg"></div>
   </div>
 
-  <!-- الصفحة الثانية: تأكيد استلام الجائزة -->
   <div id="claim-page">
     <div class="congrats-title">🎉 ألف مبروك الفوز! 🎉</div>
     <p>لقد ربحت معنا جائزة قيمة، يرجى حفظ هذه الصفحة لاستلام الجائزة.</p>
@@ -146,7 +144,8 @@
   </div>
 
 <script>
-  const prizes = ["رحلة عمرة", "سيارة", "حظ أوفر", "1000 دولار", "آيفون 18", "جائزة أخرى"];
+  // تمت إضافة الرموز التعبيرية المناسبة لكل جائزة لتظهر كشكل توضيحي رائع
+  const prizes = ["🕋 رحلة عمرة", "🚗 سيارة", "❌ حظ أوفر", "💵 1000 دولار", "📱 آيفون 18", "🎁 جائزة أخرى"];
   const colors = ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff", "#1dd1a1"];
   
   const canvas = document.getElementById("wheelCanvas");
@@ -172,8 +171,8 @@
       ctx.rotate(angle + arc / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#000000";
-      ctx.font = "bold 13px Tahoma";
-      ctx.fillText(prizes[i], 120, 5);
+      ctx.font = "bold 12px Tahoma";
+      ctx.fillText(prizes[i], 110, 5);
       ctx.restore();
     }
   }
@@ -181,9 +180,8 @@
   drawWheel();
 
   let currentRotation = 0;
-
-  // التحقق من عدد المحاولات (مسموح بمرتين كحد максимаلي)
   let playsCount = parseInt(localStorage.getItem("wheel_plays_count") || "0");
+  
   if (playsCount >= 2) {
     spinBtn.disabled = true;
     errorMsg.textContent = "عذراً، لقد استنفذت محاولاتك الـ 2 المسموحة!";
@@ -210,11 +208,8 @@
     spinBtn.disabled = true;
     errorMsg.textContent = "جاري لَف العجلة...";
 
-    // اختيار الجائزة عشوائياً بدقة
     const randomIndex = Math.floor(Math.random() * numPrizes);
     const degreesPerPrize = 360 / numPrizes;
-    
-    // تصحيح زاوية التوقف لضمان مطابقة الهدية تماماً لمؤشر السهم
     const targetAngle = 360 * 5 + (randomIndex * degreesPerPrize) + (degreesPerPrize / 2);
     
     currentRotation += targetAngle;
@@ -224,7 +219,6 @@
       playsCount++;
       localStorage.setItem("wheel_plays_count", playsCount);
 
-      // الانتقال للصفحة الثانية وعرض الهدية الصحيحة
       document.getElementById("game-page").style.display = "none";
       document.getElementById("claim-page").style.display = "block";
 
