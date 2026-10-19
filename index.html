@@ -15,15 +15,14 @@
     padding: 15px;
   }
   
-  /* صفحة العجلة */
   #game-page { display: block; }
   h2 { margin-bottom: 5px; color: #ffd700; }
   p { font-size: 14px; color: #cbd5e1; margin-top: 0; }
   
   .wheel-container {
     position: relative;
-    width: 270px;
-    height: 270px;
+    width: 280px;
+    height: 280px;
     margin: 15px auto;
   }
   .pointer {
@@ -39,8 +38,8 @@
     z-index: 10;
   }
   #wheelCanvas {
-    width: 100%;
-    height: 100%;
+    width: 280px;
+    height: 280px;
     border-radius: 50%;
     border: 6px solid #ffd700;
     transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1);
@@ -56,6 +55,8 @@
     text-align: center;
     display: block;
     outline: none;
+    background: #ffffff;
+    color: #000000;
   }
   #spinBtn {
     width: 90%;
@@ -77,7 +78,7 @@
   #claim-page {
     display: none;
     max-width: 400px;
-    margin: 30px auto;
+    margin: 20px auto;
     background: #1c2541;
     padding: 25px;
     border-radius: 16px;
@@ -92,7 +93,7 @@
     margin: 15px 0;
     border: 1px dashed #ffd700;
   }
-  .prize-name { font-size: 22px; color: #4ade80; font-weight: bold; margin: 5px 0; }
+  .prize-name { font-size: 22px; color: #4ade80; font-weight: bold; margin: 8px 0; }
   .user-info { font-size: 15px; color: #e2e8f0; margin: 4px 0; }
   .instruction-box {
     background: #ff4757;
@@ -115,7 +116,7 @@
 
     <div class="wheel-container">
       <div class="pointer"></div>
-      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <canvas id="wheelCanvas" width="280" height="280"></canvas>
     </div>
 
     <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
@@ -157,7 +158,79 @@
   const arc = (2 * Math.PI) / numPrizes;
 
   function drawWheel() {
+    ctx.clearRect(0, 0, 280, 280);
     for (let i = 0; i < numPrizes; i++) {
       const angle = i * arc;
       ctx.beginPath();
-      ctx.fillStyle = colors
+      ctx.fillStyle = colors[i];
+      ctx.moveTo(140, 140);
+      ctx.arc(140, 140, 140, angle, angle + arc);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(140, 140);
+      ctx.rotate(angle + arc / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 13px Tahoma";
+      ctx.fillText(prizes[i], 120, 5);
+      ctx.restore();
+    }
+  }
+
+  // رسم العجلة فور تحميل الصفحة
+  window.onload = function() {
+    drawWheel();
+  };
+  drawWheel();
+
+  let currentRotation = 0;
+
+  if (localStorage.getItem("has_played")) {
+    spinBtn.disabled = true;
+    errorMsg.textContent = "عذراً، لقد قمت بلَف العجلة مسبقاً! يُسمح بمشاركة واحدة فقط.";
+  }
+
+  spinBtn.onclick = () => {
+    const name = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name) {
+      errorMsg.textContent = "الرجاء إدخال الاسم الكامل أولاً!";
+      return;
+    }
+    if (!phone || phone.length < 8) {
+      errorMsg.textContent = "الرجاء إدخال رقم هاتف صحيح!";
+      return;
+    }
+
+    if (localStorage.getItem("has_played")) {
+      errorMsg.textContent = "لقد شاركت مسبقاً!";
+      return;
+    }
+
+    spinBtn.disabled = true;
+    errorMsg.textContent = "جاري لَف العجلة...";
+
+    const randomIndex = Math.floor(Math.random() * numPrizes);
+    const degreesPerPrize = 360 / numPrizes;
+    const targetAngle = 360 * 5 + (numPrizes - 1 - randomIndex) * degreesPerPrize + (degreesPerPrize / 2);
+    
+    currentRotation += targetAngle;
+    canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+    setTimeout(() => {
+      localStorage.setItem("has_played", "true");
+
+      document.getElementById("game-page").style.display = "none";
+      document.getElementById("claim-page").style.display = "block";
+
+      document.getElementById("claimedPrize").textContent = prizes[randomIndex];
+      document.getElementById("claimedName").textContent = "الاسم: " + name;
+      document.getElementById("claimedPhone").textContent = "رقم الهاتف: " + phone;
+    }, 4500);
+  };
+</script>
+
+</body>
+</html>
