@@ -3,33 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عجلة الحظ اليومية</title>
+<title>مسابقة عجلة الحظ اليومية</title>
 <style>
+  * { box-sizing: border-box; }
   body {
     background-color: #0b132b;
     color: #ffffff;
-    font-family: Tahoma, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
     margin: 0;
-    padding: 10px;
+    padding: 15px;
   }
+  
+  /* صفحة العجلة */
+  #game-page { display: block; }
   h2 { margin-bottom: 5px; color: #ffd700; }
-  p { font-size: 13px; color: #cbd5e1; margin-top: 0; }
+  p { font-size: 14px; color: #cbd5e1; margin-top: 0; }
   
   .wheel-container {
     position: relative;
-    width: 260px;
-    height: 260px;
+    width: 270px;
+    height: 270px;
     margin: 15px auto;
   }
   .pointer {
     width: 0;
     height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 24px solid #ff4757;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-bottom: 25px solid #ff4757;
     position: absolute;
-    top: -10px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -42,53 +46,103 @@
     transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1);
   }
   .input-field {
-    width: 85%;
-    max-width: 280px;
-    padding: 10px;
-    margin: 6px auto;
-    border-radius: 6px;
+    width: 90%;
+    max-width: 300px;
+    padding: 12px;
+    margin: 8px auto;
+    border-radius: 8px;
     border: none;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
     display: block;
+    outline: none;
   }
   #spinBtn {
-    width: 85%;
-    max-width: 280px;
-    padding: 11px;
+    width: 90%;
+    max-width: 300px;
+    padding: 12px;
     margin-top: 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
     background-color: #ffd700;
     color: #0b132b;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 17px;
     cursor: pointer;
   }
-  #result {
-    font-size: 16px;
-    margin-top: 12px;
+  #spinBtn:disabled { background-color: #64748b; cursor: not-allowed; }
+  #error-msg { font-size: 15px; margin-top: 10px; color: #ff4757; font-weight: bold; }
+
+  /* صفحة استلام الجائزة (الصفحة الثانية) */
+  #claim-page {
+    display: none;
+    max-width: 400px;
+    margin: 30px auto;
+    background: #1c2541;
+    padding: 25px;
+    border-radius: 16px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+  }
+  .congrats-title { font-size: 24px; color: #ffd700; margin-bottom: 10px; }
+  .prize-card {
+    background: #0b132b;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border: 1px dashed #ffd700;
+  }
+  .prize-name { font-size: 22px; color: #4ade80; font-weight: bold; margin: 5px 0; }
+  .user-info { font-size: 15px; color: #e2e8f0; margin: 4px 0; }
+  .instruction-box {
+    background: #ff4757;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
     font-weight: bold;
-    color: #ffd700;
-    min-height: 24px;
+    margin-top: 20px;
+    line-height: 1.5;
   }
 </style>
 </head>
 <body>
 
-  <h2>عجلة الحظ اليومية</h2>
-  <p>أدخل اسمك ورقم هاتفك ثم لُف العجلة واربح معنا!</p>
+  <!-- الصفحة الأولى: العجلة والإدخال -->
+  <div id="game-page">
+    <h2>عجلة الحظ اليومية 🎁</h2>
+    <p>أدخل اسمك ورقم هاتفك ثم لُف العجلة واربح معنا!</p>
 
-  <div class="wheel-container">
-    <div class="pointer"></div>
-    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    <div class="wheel-container">
+      <div class="pointer"></div>
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    </div>
+
+    <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
+    <input type="tel" id="phone" class="input-field" placeholder="أدخل رقم الهاتف مع رمز الدولة">
+    <button id="spinBtn">لَف العجلة</button>
+
+    <div id="error-msg"></div>
   </div>
 
-  <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
-  <input type="tel" id="phone" class="input-field" placeholder="أدخل رقم الهاتف مع رمز الدولة">
-  <button id="spinBtn">لَف العجلة</button>
+  <!-- الصفحة الثانية: تأكيد استلام الجائزة -->
+  <div id="claim-page">
+    <div class="congrats-title">🎉 ألف مبروك الفوز! 🎉</div>
+    <p>لقد ربحت معنا جائزة قيمة، يرجى حفظ هذه الصفحة لاستلام الجائزة.</p>
 
-  <div id="result"></div>
+    <div class="prize-card">
+      <div>الجائزة التي ربحتها هي:</div>
+      <div id="claimedPrize" class="prize-name"></div>
+      <hr style="border-color: #334155; margin: 10px 0;">
+      <div id="claimedName" class="user-info"></div>
+      <div id="claimedPhone" class="user-info"></div>
+    </div>
+
+    <div class="instruction-box">
+      📸 لاستلام الجائزة:<br>
+      يرجى أخذ لقطة شاشة (Screenshot) لهذه الصفحة وإرسالها لمسؤول الصفحة على الرسائل الخاصة!
+    </div>
+  </div>
 
 <script>
   const prizes = ["رحلة عمرة", "سيارة", "حظ أوفر", "1000 دولار", "آيفون 18", "جائزة أخرى"];
@@ -97,7 +151,7 @@
   const canvas = document.getElementById("wheelCanvas");
   const ctx = canvas.getContext("2d");
   const spinBtn = document.getElementById("spinBtn");
-  const resultDiv = document.getElementById("result");
+  const errorMsg = document.getElementById("error-msg");
   
   const numPrizes = prizes.length;
   const arc = (2 * Math.PI) / numPrizes;
@@ -106,65 +160,4 @@
     for (let i = 0; i < numPrizes; i++) {
       const angle = i * arc;
       ctx.beginPath();
-      ctx.fillStyle = colors[i];
-      ctx.moveTo(150, 150);
-      ctx.arc(150, 150, 150, angle, angle + arc);
-      ctx.fill();
-
-      ctx.save();
-      ctx.translate(150, 150);
-      ctx.rotate(angle + arc / 2);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 13px Tahoma";
-      ctx.fillText(prizes[i], 125, 5);
-      ctx.restore();
-    }
-  }
-
-  drawWheel();
-
-  let currentRotation = 0;
-
-  if (localStorage.getItem("has_played")) {
-    spinBtn.disabled = true;
-    resultDiv.textContent = "عذراً، لقد قمت بلَف العجلة مسبقاً!";
-  }
-
-  spinBtn.onclick = () => {
-    const name = document.getElementById("username").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-
-    if (!name) {
-      resultDiv.textContent = "الرجاء إدخال الاسم الكامل!";
-      return;
-    }
-    if (!phone || phone.length < 8) {
-      resultDiv.textContent = "الرجاء إدخال رقم هاتف صحيح!";
-      return;
-    }
-
-    if (localStorage.getItem("has_played")) {
-      resultDiv.textContent = "لقد شاركت مسبقاً!";
-      return;
-    }
-
-    spinBtn.disabled = true;
-    resultDiv.textContent = "جاري لَف العجلة...";
-
-    const randomIndex = Math.floor(Math.random() * numPrizes);
-    const degreesPerPrize = 360 / numPrizes;
-    const targetAngle = 360 * 5 + (numPrizes - 1 - randomIndex) * degreesPerPrize + (degreesPerPrize / 2);
-    
-    currentRotation += targetAngle;
-    canvas.style.transform = `rotate(${currentRotation}deg)`;
-
-    setTimeout(() => {
-      resultDiv.textContent = `مبروك يا ${name}! ربحت معنا: ${prizes[randomIndex]} 🎉`;
-      localStorage.setItem("has_played", "true");
-    }, 4000);
-  };
-</script>
-
-</body>
-</html>
+      ctx.fillStyle = colors
