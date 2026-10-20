@@ -130,4 +130,133 @@
 
     <div class="prize-card">
       <div>الجائزة التي ربحتها هي:</div>
-      <div id="claimed
+      <div id="claimedPrize" class="prize-name">---</div>
+      <div class="user-info">الاسم: <span id="display-name"></span></div>
+      <div class="user-info">الهاتف: <span id="display-phone"></span></div>
+    </div>
+
+    <div class="instruction-box">
+      الرجاء أخذ لقطة شاشة (Screenshot) لهذه الصفحة والتواصل مع خدمة العملاء لاستلام جائزتك!
+    </div>
+  </div>
+
+<script>
+  const prizes = [
+    { name: "هاتف ذكي 📱", color: "#3a86ef" },
+    { name: "بطاقة تسوق 💳", color: "#8338ec" },
+    { name: "سماعات لاسلكية 🎧", color: "#ff006e" },
+    { name: "حفظ المحاولة 🔁", color: "#fb5607" },
+    { name: "ساعة ذكية ⌚", color: "#ffbe0b" },
+    { name: "قسيمة خصم 50% 🏷️", color: "#06d6a0" }
+  ];
+
+  const canvas = document.getElementById("wheelCanvas");
+  const ctx = canvas.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const errorMsg = document.getElementById("error-msg");
+  
+  const numPrizes = prizes.length;
+  const arcSize = (2 * Math.PI) / numPrizes;
+  let currentRotation = 0;
+  let isSpinning = false;
+
+  // رسم عجلة الحظ
+  function drawWheel() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = canvas.width / 2;
+
+    for (let i = 0; i < numPrizes; i++) {
+      const angle = i * arcSize;
+      
+      // رسم القطاع
+      ctx.beginPath();
+      ctx.fillStyle = prizes[i].color;
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
+      ctx.lineTo(centerX, centerY);
+      ctx.fill();
+
+      // رسم النصوص
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle + arcSize / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px Tahoma";
+      ctx.fillText(prizes[i].name, radius - 15, 5);
+      ctx.restore();
+    }
+  }
+
+  drawWheel();
+
+  // التحقق من المحاولات اليومية
+  function getSpinsToday() {
+    const today = new Date().toISOString().split('T')[0];
+    const savedData = JSON.parse(localStorage.getItem('wheel_spins') || '{}');
+    if (savedData.date !== today) {
+      return 0;
+    }
+    return savedData.count || 0;
+  }
+
+  function incrementSpins() {
+    const today = new Date().toISOString().split('T')[0];
+    const count = getSpinsToday() + 1;
+    localStorage.setItem('wheel_spins', JSON.stringify({ date: today, count: count }));
+  }
+
+  spinBtn.addEventListener("click", () => {
+    const name = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    errorMsg.textContent = "";
+
+    if (!name || !phone) {
+      errorMsg.textContent = "يرجى إدخال الاسم ورقم الهاتف أولاً!";
+      return;
+    }
+
+    const spinsToday = getSpinsToday();
+    if (spinsToday >= 2) {
+      errorMsg.textContent = "لقد استنفدت محاولتيك لهذا اليوم، عد غداً!";
+      return;
+    }
+
+    if (isSpinning) return;
+    isSpinning = true;
+    spinBtn.disabled = true;
+
+    // اختيار جائزة عشوائية
+    const winningIndex = Math.floor(Math.random() * numPrizes);
+    
+    // حساب زاوية الدوران المستهدفة
+    const degreesPerSegment = 360 / numPrizes;
+    const randomRounds = 5; // عدد الدورات الكاملة
+    
+    // محاذاة مؤشر السهم (الأعلى)
+    const targetDegree = randomRounds * 360 + (360 - (winningIndex * degreesPerSegment + degreesPerSegment / 2)) - 90;
+    currentRotation += targetDegree;
+
+    canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+    // تسجيل المحاولة
+    incrementSpins();
+
+    setTimeout(() => {
+      isSpinning = false;
+      
+      // عرض صفحة الفوز
+      document.getElementById("game-page").style.display = "none";
+      document.getElementById("claim-page").style.display = "block";
+      
+      document.getElementById("claimedPrize").textContent = prizes[winningIndex].name;
+      document.getElementById("display-name").textContent = name;
+      document.getElementById("display-phone").textContent = phone;
+
+    }, 4000);
+  });
+</script>
+
+</body>
+</html>
