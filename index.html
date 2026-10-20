@@ -80,4 +80,54 @@
     margin: 20px auto;
     background: #1c2541;
     padding: 25px;
-    border
+    border-radius: 16px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+  }
+  .congrats-title { font-size: 24px; color: #ffd700; margin-bottom: 10px; }
+  .prize-card {
+    background: #0b132b;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border: 1px dashed #ffd700;
+  }
+  .prize-name { font-size: 22px; color: #4ade80; font-weight: bold; margin: 8px 0; }
+  .user-info { font-size: 14px; color: #e2e8f0; margin: 5px 0; text-align: right; }
+  .instruction-box {
+    background: #ff4757;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+  <div id="game-page">
+    <h2>عجلة الحظ اليومية 🎁</h2>
+    <p>أدخل اسمك ورقم هاتفك (مسموح محاولتان كل يوم)!</p>
+
+    <div class="wheel-container">
+      <div class="pointer"></div>
+      <canvas id="wheelCanvas" width="280" height="280"></canvas>
+    </div>
+
+    <input type="text" id="username" class="input-field" placeholder="أدخل الاسم الكامل">
+    <input type="tel" id="phone" class="input-field" placeholder="أدخل رقم الهاتف مع رمز الدولة">
+    <button id="spinBtn">لَف العجلة</button>
+
+    <div id="error-msg"></div>
+  </div>
+
+  <div id="claim-page">
+    <div class="congrats-title">🎉 ألف مبروك الفوز! 🎉</div>
+    <p>لقد ربحت معنا جائزة قيمة، يرجى حفظ هذه الصفحة لاستلام الجائزة.</p>
+
+    <div class="prize-card">
+      <div>الجائزة التي ربحتها هي:</div>
+      <div id="claimed
